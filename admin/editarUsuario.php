@@ -12,7 +12,7 @@ if (isset($_REQUEST['guardar'])) {
     $id = mysqli_real_escape_string($con, $_REQUEST['id'] ?? '');
 
     $query = "UPDATE usuarios SET
-        email='" . $email . "', password= '" . $password . "', nombre= '" . $nombre . "' WHERE id='" . $id . "' ; ";
+        email ='" . $email . "', password ='" . $password . "', nombre ='" . $nombre . "' WHERE id ='" . $id . "' ; ";
 
     $res = mysqli_query($con, $query);
     if ($res) {

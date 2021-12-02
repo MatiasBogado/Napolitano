@@ -3,10 +3,15 @@
 
 <?php
 session_start();
+session_regenerate_id(true);
+if (isset($_REQUEST['sesion']) && $_REQUEST['sesion'] == "cerrar") {
+  session_destroy();
+  header("location: index.php");
+}
 if (isset($_SESSION['id']) == false) {
   header("location: index.php");
 }
-$modulo = $_REQUEST['modulo']??'';
+$modulo = $_REQUEST['modulo'] ?? '';
 ?>
 
 <head>
@@ -36,7 +41,12 @@ $modulo = $_REQUEST['modulo']??'';
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
   <!-- DataTables -->
-  <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.css">
+  <!-- <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.css">-->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.0/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.0.0/css/buttons.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/datetime/1.1.1/css/dataTables.dateTime.min.css">
+  <link rel="stylesheet" href="css/editor.dataTables.min.css">
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -55,6 +65,9 @@ $modulo = $_REQUEST['modulo']??'';
         <!-- Messages Dropdown Menu -->
         <a class="nav-link" href="panel.php?modulo=editarUsuario&id=<?php echo $_SESSION['id']; ?> ">
           <i class="far fa-user"></i>
+        </a>
+        <a class="nav-link text-danger" href="panel.php?modulo=&session=cerrar" title="Cerrar sesion ">
+          <i class="far fa-door-closed "></i>
         </a>
       </ul>
     </nav>
@@ -194,8 +207,13 @@ $modulo = $_REQUEST['modulo']??'';
   <!-- AdminLTE for demo purposes -->
   <script src="dist/js/demo.js"></script>
   <!-- DataTables -->
-  <script src="plugins/datatables/jquery.dataTables.js"></script>
-  <script src="plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
+  <!--<script src="plugins/datatables/jquery.dataTables.js"></script>
+  <script src="plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>-->
+  <script src="https://cdn.datatables.net/1.11.0/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.0.0/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+  <script src="https://cdn.datatables.net/datetime/1.1.1/js/dataTables.dateTime.min.js"></script>
+  <script src="js/dataTables.editor.min.js"></script>
   <!-- page script -->
   <script>
     $(function() {
@@ -207,13 +225,44 @@ $modulo = $_REQUEST['modulo']??'';
         "info": true,
         "autoWidth": false,
       });
+      editor = new $.fn.dataTable.Editor( {
+        ajax: "controllers/productos.php",
+        table: "#tablaProductos",
+        fields: [ {
+                label: "Nombre:",
+                name: "nombre"
+            }, {
+                label: "Precio:",
+                name: "precio"
+            }, {
+                label: "Existencia:",
+                name: "existencia"
+            }
+        ]
+    } );
+ 
+    $('#tablaProductos').DataTable( {
+        dom: "Bfrtip",
+        ajax: "controllers/productos.php",
+        columns: [
+            { data: "nombre" },
+            { data: "precio", render: $.fn.dataTable.render.number( ',', '.', 0, '$' ) },
+            { data: "existencia" },
+        ],
+        select: true,
+        buttons: [
+            { extend: "create", editor: editor },
+            { extend: "edit",   editor: editor },
+            { extend: "remove", editor: editor }
+        ]
+    } );
     });
   </script>
   <script>
     $(document).ready(function() {
       $(".borrar").click(function(e) {
         e.preventDefault();
-        var res = confirm("¿Realmente quiere borrar ese usuario?");
+        var res = confirm("¿Realmente quiere borrar el usuario?");
         if (res == true) {
           var link = $(this).attr("href");
           window.location = link;
