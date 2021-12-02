@@ -24,15 +24,34 @@ Editor::inst($db, 'productos')
 		Field::inst('nombre')
 			->validator(Validate::notEmpty(
 				ValidateOptions::inst()
-					->message('Debe ingresar un nombre')
+					->message('Debe ingresar un nombre'),
 			)),
+		
 		Field::inst('precio')
 			->validator(Validate::numeric())
 			->setFormatter(Format::ifEmpty(null)),
 		Field::inst('existencia')
 			->validator(Validate::numeric())
-			->setFormatter(Format::ifEmpty(null)),
+			->setFormatter(Format::ifEmpty(null))
 	)
+	->join(
+        Mjoin::inst( 'files' )
+            ->link( 'productos.id', 'productos_files.producto_id' )
+            ->link( 'files.id', 'productos_files.file_id' )
+            ->fields(
+                Field::inst( 'id' )
+                    ->upload( Upload::inst( $_SERVER['DOCUMENT_ROOT'].'/ecommerce/uploads/__ID__.__EXTN__' )
+                        ->db( 'files', 'id', array(
+                            'filename'    => Upload::DB_FILE_NAME,
+                            'filesize'    => Upload::DB_FILE_SIZE,
+                            'web_path'    => Upload::DB_WEB_PATH,
+                            'system_path' => Upload::DB_SYSTEM_PATH
+                        ) )
+                        ->validator( Validate::fileSize( 5000000, 'Files must be smaller that 500K' ) )
+                        ->validator( Validate::fileExtensions( array( 'webp','png', 'jpg', 'jpeg', 'gif' ), "Please upload an image" ) )
+                    )
+            )
+    )
 	->debug(true)
 	->process($_POST)
 	->json();
