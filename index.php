@@ -22,6 +22,10 @@
 </head>
 
 <body>
+    <?php
+    include_once "admin/db_ecommerce.php";
+    $con = mysqli_connect($host, $user, $password, $db);
+    ?>
     <div class="container">
         <div class="row">
             <div class="col-12">
@@ -57,7 +61,7 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link" data-toggle="dropdown" href="#">
                                 <i class="fa fa-cart-plus" aria-hidden="true"></i>
-                                <span class="badge badge-danger navbar-badge">3</span>
+                                <span class="badge badge-danger navbar-badge" id="badgeProducto"></span>
                             </a>
                             <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                                 <a href="#" class="dropdown-item">
@@ -140,107 +144,19 @@
                         </li>
                     </ul>
                 </nav>
-                <div class="row">
-                    <?php
-                    include_once "admin/db_ecommerce.php";
-                    $con = mysqli_connect($host, $user, $password, $db);
-                    $where = "where 1=1";
-                    $nombre = mysqli_real_escape_string($con, $_REQUEST['nombre'] ?? '');
-                    if (empty($nombre) == false) {
-                        $where = "and nombre like '%" . $nombre . "%'";
-                    }
-                    $queryCuenta = "SELECT COUNT(*) as cuenta FROM productos $where ;";
-                    $resCuenta = mysqli_query($con, $queryCuenta);
-                    $rowCuenta = mysqli_fetch_assoc($resCuenta);
-                    $totalRegistros = $rowCuenta['cuenta'];
-
-                    $elementosPorPagina = 12;
-
-                    $totalPaginas = ceil($totalRegistros / $elementosPorPagina);
-
-                    $paginaSelec = $_REQUEST['pagina'] ?? false;
-
-                    if ($paginaSelec == false) {
-                        $inicioLimite = 0;
-                        $paginaSelec = 1;
-                    } else {
-                        $inicioLimite = ($paginaSelec - 1) * $elementosPorPagina;
-                    }
-                    $limite = " limit $inicioLimite,$elementosPorPagina";
-                    $query = "SELECT 
-                        p.id, p.nombre, p.precio, p.existencia, f.web_path 
-                        FROM productos AS p
-                        INNER JOIN productos_files AS pf ON pf.producto_id=p.id  
-                        INNER JOIN files AS f ON f.id=pf.file_id $where GROUP BY p.id $limite ";
-
-                    $res = mysqli_query($con, $query);
-                    while ($row = mysqli_fetch_assoc($res)) {
-                    ?>
-                        <div class="clo-lg-4 col-md-6 col-sm-12">
-                            <div class="card border-primary">
-                                <img class="card-img-top img-thumbnail" src="<?php echo $row['web_path'] ?>" alt="">
-                                <div class="card-body">
-                                    <h4 class="card-title"><strong><?php echo $row['nombre'] ?></strong></h4>
-                                    <p class="card-text"><strong>Precio:</strong><?php echo $row['precio'] ?></p>
-                                    <p class="card-text"><strong>Existencia:</strong><?php echo $row['existencia'] ?></p>
-                                    <a href="#" class="btn btn-primary">Ver</a>
-                                </div>
-                            </div>
-                        </div>
-
-                    <?php
-
-                    }
-                    ?>
-                </div>
-                <!-- /.navbar -->
                 <?php
-                if ($totalPaginas > 0) {
-                ?>
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination">
-                            <?php
-                            if ($paginaSelec != 1) {
-                            ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="index.php?modulo=productos&pagina=<?php echo ($paginaSelec - 1); ?> " aria-label="Previous">
-                                        <span aria-hidden="true">&laquo;</span>
-                                        <span class="sr-only">Previous</span>
-                                    </a>
-                                </li>
-                            <?php
-                            }
-                            ?>
-                            <?php
-                            for ($i = 1; $i <= $totalPaginas; $i++) {
-                            ?>
-                                <li class="page-item <?php echo ($paginaSelec == $i) ? " active " : " "; ?>">
-                                    <a class="page-link" href="index.php?modulo=productos&pagina=<?php echo $i; ?>"><?php echo $i; ?></a>
-                                </li>
-                            <?php
-                            }
-                            ?>
-                            <?php
-                            if ($paginaSelec != $totalPaginas) {
-                            ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="index.php?modulo=productos&pagina=<?php echo ($paginaSelec + 1); ?>" aria-label="Next">
-                                        <span aria-hidden="true">&raquo;</span>
-                                        <span class="sr-only">Next</span>
-                                    </a>
-                                </li>
-                            <?php
-                            }
-                            ?>
-                        </ul>
-                    </nav>
-                <?php
+                $modulo = $_REQUEST['modulo']??'';
+                if($modulo == "productos" || $modulo == ""){
+                    include_once "productos.php";
+                }
+                if($modulo== "detalleProducto"){
+                    include_once "detalleProducto.php";
                 }
                 ?>
             </div>
         </div>
-
     </div>
+
     <!-- jQuery -->
     <script src="admin/plugins/jquery/jquery.min.js"></script>
     <!-- jQuery UI 1.11.4 -->
@@ -254,7 +170,7 @@
     <script src="admin/dist/js/adminlte.js"></script>
     <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
     <script src="admin/dist/js/pages/dashboard.js"></script>
-
+    <script src="admin/js/ecommerce.js"></script>
 
 </body>
 
